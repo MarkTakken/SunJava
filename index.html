@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Java App in Browser</title>
+    <script src="https://cjrtnc.leaningtech.com/3.0/loader.js"></script>
+</head>
+<body>
+    <h2>My Java Program is Running Below:</h2>
+    
+    <div id="container"></div>
+
+    <script>
+        (async function () {
+            // 3. Initialize the environment
+            await cheerpjInit();
+
+            // 4. Create a display area (Required for Swing/AWT, optional for console)
+            // cheerpjCreateDisplay(800, 600, document.getElementById("container"));
+
+            // 5. Run the JAR from the virtual /app/ directory
+            // The /app/ prefix refers to the root of your web server
+            await cheerpjRunJar("/app/MyProgram.jar");
+        })();
+    </script>
+    
+    <p><em>Note: Open the Browser Console (F12) to see System.out.println output.</em></p>
+</body>
+</html>
