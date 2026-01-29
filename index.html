@@ -34,17 +34,19 @@
             const statusLabel = document.getElementById('status');
             
             try {
-                statusLabel.innerText = "Initializing JVM...";
+                statusLabel.innerText = "Initializing JVM (Java 17 Mode)...";
                 if (typeof cheerpjInit === 'undefined') throw new Error("CheerpJ library missing.");
 
-                await cheerpjInit();
+                // --- THE FINAL FIX ---
+                // We explicitly tell CheerpJ to use the Java 17 runtime
+                await cheerpjInit({ version: 17 });
                 
                 statusLabel.innerText = "Creating Display...";
                 cheerpjCreateDisplay(800, 600, document.getElementById("container"));
                 
-                statusLabel.innerText = "Downloading Application (Fresh Version)...";
+                statusLabel.innerText = "Downloading Application...";
                 
-                // 1. Get current folder path
+                // Path construction with Cache Busting
                 let folderPath = window.location.pathname;
                 if (folderPath.endsWith("index.html")) {
                     folderPath = folderPath.substring(0, folderPath.lastIndexOf('/'));
@@ -53,8 +55,6 @@
                     folderPath += "/";
                 }
                 
-                // 2. Add a TIMESTAMP to bust the cache
-                // This forces the browser to download the file fresh every time
                 const cacheBuster = new Date().getTime();
                 const jarPath = `/app${folderPath}SunJava.jar?v=${cacheBuster}`;
                 
