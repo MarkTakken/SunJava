@@ -35,22 +35,32 @@
             
             try {
                 statusLabel.innerText = "Initializing JVM...";
-                
-                // Double-check just to be safe
-                if (typeof cheerpjInit === 'undefined') {
-                    throw new Error("CheerpJ library is still missing!");
-                }
+                if (typeof cheerpjInit === 'undefined') throw new Error("CheerpJ library missing.");
 
-                // Initialize the new 4.2 Runtime
                 await cheerpjInit();
                 
                 statusLabel.innerText = "Creating Display...";
                 cheerpjCreateDisplay(800, 600, document.getElementById("container"));
                 
-                statusLabel.innerText = "Downloading and Running Application...";
+                statusLabel.innerText = "Locating Application...";
                 
-                // Ensure your GitHub file is named EXACTLY 'SunJava.jar'
-                await cheerpjRunJar("/app/SunJava.jar");
+                // --- THE FIX IS HERE ---
+                // 1. Get the current folder path (e.g., "/SunPosition/") from the URL
+                let folderPath = window.location.pathname;
+                // 2. Remove "index.html" if it's present
+                if (folderPath.endsWith("index.html")) {
+                    folderPath = folderPath.substring(0, folderPath.lastIndexOf('/'));
+                }
+                // 3. Ensure it ends with a slash
+                if (!folderPath.endsWith("/")) {
+                    folderPath += "/";
+                }
+                
+                // 4. Construct the correct path: /app/RepoName/SunJava.jar
+                const jarPath = `/app${folderPath}SunJava.jar`;
+                console.log("Loading JAR from:", jarPath); 
+                
+                await cheerpjRunJar(jarPath);
                 
                 statusLabel.innerText = "Application Running.";
             } catch (e) {
@@ -61,39 +71,19 @@
         }
 
         function waitForLibrary(attempts = 0) {
-            const statusLabel = document.getElementById('status');
-            
             if (typeof cheerpjInit !== 'undefined') {
-                console.log("Library detected. Starting...");
                 runCheerpJ();
             } else {
-                if (attempts > 50) { 
-                    statusLabel.className = "error";
-                    statusLabel.innerText = "Error: CheerpJ library loaded but failed to initialize. Check console.";
-                    return;
-                }
+                if (attempts > 100) return; // Stop after 10 seconds
                 setTimeout(() => waitForLibrary(attempts + 1), 100);
             }
         }
 
         function loadCheerpJLibrary() {
-            const statusLabel = document.getElementById('status');
-            statusLabel.innerText = "Downloading CheerpJ Engine...";
-
             const script = document.createElement('script');
-            // UPDATED: Using version 4.2 instead of 3.0
             script.src = "https://cjrtnc.leaningtech.com/4.2/loader.js";
-            
-            script.onload = () => {
-                console.log("Download finished. Verifying library...");
-                waitForLibrary();
-            };
-
-            script.onerror = () => {
-                statusLabel.className = "error";
-                statusLabel.innerText = "Error: Network failed to download CheerpJ.";
-            };
-
+            script.onload = () => waitForLibrary();
+            script.onerror = () => document.getElementById('status').innerText = "Network Error.";
             document.head.appendChild(script);
         }
 
