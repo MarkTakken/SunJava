@@ -1,41 +1,84 @@
-<script>
-    async function startJavaApp() {
-        const statusLabel = document.getElementById('status');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sun Position Calculator</title>
+    
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
+        h2 { color: #333; }
         
-        // 1. Helper function to wait until the CheerpJ library is actually ready
-        const waitForCheerpJ = () => {
-            return new Promise((resolve) => {
-                const check = () => {
-                    if (typeof cheerpjInit !== 'undefined') {
-                        resolve();
-                    } else {
-                        setTimeout(check, 100); // Check every 100ms
-                    }
-                };
-                check();
-            });
-        };
-
-        try {
-            statusLabel.innerText = "Waiting for CheerpJ Loader...";
-            await waitForCheerpJ();
-
-            statusLabel.innerText = "Loading JVM...";
-            await cheerpjInit();
-            
-            cheerpjCreateDisplay(800, 600, document.getElementById("container"));
-            
-            statusLabel.innerText = "Running Sun Position Application...";
-            // Note: Ensure your JAR is named SunJava.jar exactly as shown here
-            await cheerpjRunJar("/app/SunJava.jar");
-            
-            statusLabel.innerText = "Application Running.";
-        } catch (error) {
-            statusLabel.innerText = "Error loading application. Check console (F12).";
-            console.error("CheerpJ Startup Error:", error);
+        #container {
+            width: 800px;
+            height: 600px;
+            margin: 20px 0;
+            border: 2px solid #ddd;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-    }
 
-    // Trigger the start
-    window.addEventListener('load', startJavaApp);
-</script>
+        #status { color: #666; font-style: italic; margin-bottom: 10px; font-weight: bold; }
+        .error { color: red !important; }
+    </style>
+</head>
+<body>
+
+    <h2>Sun Position Calculator</h2>
+    <div id="status">Initializing System...</div>
+    
+    <div id="container"></div>
+
+    <script>
+        // 1. The entry point: This function runs only AFTER the script is fully loaded
+        async function runCheerpJ() {
+            const statusLabel = document.getElementById('status');
+            
+            try {
+                statusLabel.innerText = "Initializing JVM...";
+                // Now we are safe to call this because we know the script is loaded
+                await cheerpjInit();
+                
+                statusLabel.innerText = "Creating Display...";
+                cheerpjCreateDisplay(800, 600, document.getElementById("container"));
+                
+                statusLabel.innerText = "Downloading and Running Application...";
+                // Ensure your file on GitHub is named EXACTLY 'SunJava.jar'
+                await cheerpjRunJar("/app/SunJava.jar");
+                
+                statusLabel.innerText = "Application Running.";
+            } catch (e) {
+                statusLabel.className = "error";
+                statusLabel.innerText = "Runtime Error: " + e;
+                console.error(e);
+            }
+        }
+
+        // 2. The Loader: Manually inject the script tag
+        function loadCheerpJLibrary() {
+            const statusLabel = document.getElementById('status');
+            statusLabel.innerText = "Downloading CheerpJ Engine...";
+
+            const script = document.createElement('script');
+            script.src = "https://cjrtnc.leaningtech.com/3.0/loader.js";
+            
+            // This event triggers ONLY when the external file is fully downloaded and parsed
+            script.onload = () => {
+                console.log("CheerpJ library loaded successfully.");
+                runCheerpJ();
+            };
+
+            // This handles network errors (like ad blockers or firewall issues)
+            script.onerror = () => {
+                statusLabel.className = "error";
+                statusLabel.innerText = "Error: Failed to load CheerpJ library. Check your internet connection or ad blocker.";
+            };
+
+            document.head.appendChild(script);
+        }
+
+        // Start the process immediately
+        loadCheerpJLibrary();
+    </script>
+</body>
+</html>
