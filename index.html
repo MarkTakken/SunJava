@@ -2,28 +2,64 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Java App in Browser</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sun Position Calculator</title>
+    
     <script src="https://cjrtnc.leaningtech.com/3.0/loader.js"></script>
+
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
+        h2 { color: #333; }
+        
+        /* 2. Style the container so it's visible and correctly sized */
+        #container {
+            width: 800px;
+            height: 600px;
+            margin: 20px 0;
+            border: 2px solid #ddd;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #status { color: #666; font-style: italic; margin-bottom: 10px; }
+    </style>
 </head>
 <body>
-    <h2>My Java Program is Running Below:</h2>
+
+    <h2>Sun Position Calculator</h2>
+    <div id="status">Initializing Java Runtime (please wait)...</div>
     
     <div id="container"></div>
 
+    <p><em>Tip: If the application doesn't appear, press F12 and check the "Console" tab for errors.</em></p>
+
     <script>
-        (async function () {
-            // 3. Initialize the environment
-            await cheerpjInit();
+        async function startJavaApp() {
+            const statusLabel = document.getElementById('status');
+            
+            try {
+                // 3. Initialize CheerpJ
+                statusLabel.innerText = "Loading JVM...";
+                await cheerpjInit();
+                
+                // 4. Create the display area
+                // This maps your JFrame to the HTML div
+                cheerpjCreateDisplay(800, 600, document.getElementById("container"));
+                
+                // 5. Run the JAR
+                // NOTE: Ensure your file is named exactly 'MyProgram.jar' on GitHub
+                statusLabel.innerText = "Running Sun Position Application...";
+                await cheerpjRunJar("/app/MyProgram.jar");
+                
+                statusLabel.innerText = "Application Running.";
+            } catch (error) {
+                statusLabel.innerText = "Error loading application. Check console (F12).";
+                console.error("CheerpJ Startup Error:", error);
+            }
+        }
 
-            // 4. Create a display area (Required for Swing/AWT, optional for console)
-            cheerpjCreateDisplay(800, 600, document.getElementById("container"));
-
-            // 5. Run the JAR from the virtual /app/ directory
-            // The /app/ prefix refers to the root of your web server
-            await cheerpjRunJar("/app/MyProgram.jar");
-        })();
+        // Ensure the loader is ready before running the start function
+        window.onload = startJavaApp;
     </script>
-    
-    <p><em>Note: Open the Browser Console (F12) to see System.out.println output.</em></p>
 </body>
 </html>
