@@ -30,7 +30,6 @@
     <div id="container"></div>
 
     <script>
-        // 1. The Main Execution Function
         async function runCheerpJ() {
             const statusLabel = document.getElementById('status');
             
@@ -42,6 +41,7 @@
                     throw new Error("CheerpJ library is still missing!");
                 }
 
+                // Initialize the new 4.2 Runtime
                 await cheerpjInit();
                 
                 statusLabel.innerText = "Creating Display...";
@@ -49,7 +49,7 @@
                 
                 statusLabel.innerText = "Downloading and Running Application...";
                 
-                // IMPORTANT: Ensure your GitHub file is named 'SunJava.jar'
+                // Ensure your GitHub file is named EXACTLY 'SunJava.jar'
                 await cheerpjRunJar("/app/SunJava.jar");
                 
                 statusLabel.innerText = "Application Running.";
@@ -60,38 +60,32 @@
             }
         }
 
-        // 2. The "Waiter" Function
-        // This loops every 100ms to check if the library is actually ready
         function waitForLibrary(attempts = 0) {
             const statusLabel = document.getElementById('status');
             
             if (typeof cheerpjInit !== 'undefined') {
-                // Success! It's ready.
                 console.log("Library detected. Starting...");
                 runCheerpJ();
             } else {
-                if (attempts > 50) { // Timeout after 5 seconds
+                if (attempts > 50) { 
                     statusLabel.className = "error";
                     statusLabel.innerText = "Error: CheerpJ library loaded but failed to initialize. Check console.";
                     return;
                 }
-                // Not ready yet, wait 100ms and try again
-                console.log("Waiting for cheerpjInit...");
                 setTimeout(() => waitForLibrary(attempts + 1), 100);
             }
         }
 
-        // 3. The Loader
         function loadCheerpJLibrary() {
             const statusLabel = document.getElementById('status');
             statusLabel.innerText = "Downloading CheerpJ Engine...";
 
             const script = document.createElement('script');
-            script.src = "https://cjrtnc.leaningtech.com/3.0/loader.js";
+            // UPDATED: Using version 4.2 instead of 3.0
+            script.src = "https://cjrtnc.leaningtech.com/4.2/loader.js";
             
             script.onload = () => {
                 console.log("Download finished. Verifying library...");
-                // Don't run immediately; start the wait loop
                 waitForLibrary();
             };
 
@@ -103,7 +97,6 @@
             document.head.appendChild(script);
         }
 
-        // Start
         loadCheerpJLibrary();
     </script>
 </body>
