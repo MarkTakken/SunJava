@@ -1,65 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sun Position Calculator</title>
-    
-    <script src="https://cjrtnc.leaningtech.com/3.0/loader.js"></script>
-
-    <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
-        h2 { color: #333; }
+<script>
+    async function startJavaApp() {
+        const statusLabel = document.getElementById('status');
         
-        /* 2. Style the container so it's visible and correctly sized */
-        #container {
-            width: 800px;
-            height: 600px;
-            margin: 20px 0;
-            border: 2px solid #ddd;
-            background-color: #fff;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        // 1. Helper function to wait until the CheerpJ library is actually ready
+        const waitForCheerpJ = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof cheerpjInit !== 'undefined') {
+                        resolve();
+                    } else {
+                        setTimeout(check, 100); // Check every 100ms
+                    }
+                };
+                check();
+            });
+        };
 
-        #status { color: #666; font-style: italic; margin-bottom: 10px; }
-    </style>
-</head>
-<body>
+        try {
+            statusLabel.innerText = "Waiting for CheerpJ Loader...";
+            await waitForCheerpJ();
 
-    <h2>Sun Position Calculator</h2>
-    <div id="status">Initializing Java Runtime (please wait)...</div>
-    
-    <div id="container"></div>
-
-    <p><em>Tip: If the application doesn't appear, press F12 and check the "Console" tab for errors.</em></p>
-
-    <script>
-        async function startJavaApp() {
-            const statusLabel = document.getElementById('status');
+            statusLabel.innerText = "Loading JVM...";
+            await cheerpjInit();
             
-            try {
-                // 3. Initialize CheerpJ
-                statusLabel.innerText = "Loading JVM...";
-                await cheerpjInit();
-                
-                // 4. Create the display area
-                // This maps your JFrame to the HTML div
-                cheerpjCreateDisplay(800, 600, document.getElementById("container"));
-                
-                // 5. Run the JAR
-                // NOTE: Ensure your file is named exactly 'MyProgram.jar' on GitHub
-                statusLabel.innerText = "Running Sun Position Application...";
-                await cheerpjRunJar("/app/SunJava.jar");
-                
-                statusLabel.innerText = "Application Running.";
-            } catch (error) {
-                statusLabel.innerText = "Error loading application. Check console (F12).";
-                console.error("CheerpJ Startup Error:", error);
-            }
+            cheerpjCreateDisplay(800, 600, document.getElementById("container"));
+            
+            statusLabel.innerText = "Running Sun Position Application...";
+            // Note: Ensure your JAR is named SunJava.jar exactly as shown here
+            await cheerpjRunJar("/app/SunJava.jar");
+            
+            statusLabel.innerText = "Application Running.";
+        } catch (error) {
+            statusLabel.innerText = "Error loading application. Check console (F12).";
+            console.error("CheerpJ Startup Error:", error);
         }
+    }
 
-        // Ensure the loader is ready before running the start function
-        window.onload = startJavaApp;
-    </script>
-</body>
-</html>
+    // Trigger the start
+    window.addEventListener('load', startJavaApp);
+</script>
