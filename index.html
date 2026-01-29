@@ -42,22 +42,22 @@
                 statusLabel.innerText = "Creating Display...";
                 cheerpjCreateDisplay(800, 600, document.getElementById("container"));
                 
-                statusLabel.innerText = "Locating Application...";
+                statusLabel.innerText = "Downloading Application (Fresh Version)...";
                 
-                // --- THE FIX IS HERE ---
-                // 1. Get the current folder path (e.g., "/SunPosition/") from the URL
+                // 1. Get current folder path
                 let folderPath = window.location.pathname;
-                // 2. Remove "index.html" if it's present
                 if (folderPath.endsWith("index.html")) {
                     folderPath = folderPath.substring(0, folderPath.lastIndexOf('/'));
                 }
-                // 3. Ensure it ends with a slash
                 if (!folderPath.endsWith("/")) {
                     folderPath += "/";
                 }
                 
-                // 4. Construct the correct path: /app/RepoName/SunJava.jar
-                const jarPath = `/app${folderPath}SunJava.jar`;
+                // 2. Add a TIMESTAMP to bust the cache
+                // This forces the browser to download the file fresh every time
+                const cacheBuster = new Date().getTime();
+                const jarPath = `/app${folderPath}SunJava.jar?v=${cacheBuster}`;
+                
                 console.log("Loading JAR from:", jarPath); 
                 
                 await cheerpjRunJar(jarPath);
@@ -74,7 +74,7 @@
             if (typeof cheerpjInit !== 'undefined') {
                 runCheerpJ();
             } else {
-                if (attempts > 100) return; // Stop after 10 seconds
+                if (attempts > 100) return;
                 setTimeout(() => waitForLibrary(attempts + 1), 100);
             }
         }
