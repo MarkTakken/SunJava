@@ -1,35 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sun Position Calculator</title>
-    
-    <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
-        h2 { color: #333; }
-        
-        #container {
-            width: 680px;
-            height: 350px;
-            margin: 20px 0;
-            border: 2px solid #ddd;
-            background-color: #fff;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        #status { color: #666; font-style: italic; margin-bottom: 10px; font-weight: bold; }
-        .error { color: red !important; }
-    </style>
-</head>
-<body>
-
-    <h2>Sun Position Calculator</h2>
-    <div id="status">Initializing System...</div>
-    
-    <div id="container"></div>
-
-    <script>
+<script>
         async function runCheerpJ() {
             const statusLabel = document.getElementById('status');
             
@@ -37,8 +6,6 @@
                 statusLabel.innerText = "Initializing JVM (Java 17 Mode)...";
                 if (typeof cheerpjInit === 'undefined') throw new Error("CheerpJ library missing.");
 
-                // --- THE FINAL FIX ---
-                // We explicitly tell CheerpJ to use the Java 17 runtime
                 await cheerpjInit({ version: 17 });
                 
                 statusLabel.innerText = "Creating Display...";
@@ -60,9 +27,18 @@
                 
                 console.log("Loading JAR from:", jarPath); 
                 
-                await cheerpjRunJar(jarPath);
+                // --- THE FIX ---
+                // 1. We REMOVE "await". We don't want to wait for the app to close.
+                // 2. We chain a .catch() to handle errors since we aren't awaiting it anymore.
+                cheerpjRunJar(jarPath).catch(e => {
+                    statusLabel.style.display = 'block';
+                    statusLabel.className = 'error';
+                    statusLabel.innerText = "Runtime Error: " + e;
+                });
                 
-                statusLabel.innerText = "Application Running.";
+                // 3. Force the label to disappear immediately
+                statusLabel.style.display = 'none';
+                
             } catch (e) {
                 statusLabel.className = "error";
                 statusLabel.innerText = "Runtime Error: " + e;
@@ -89,5 +65,3 @@
 
         loadCheerpJLibrary();
     </script>
-</body>
-</html>
